@@ -116,6 +116,7 @@ class TreeNode(SkbioObject):
         >>> repr(tree)
         '<TreeNode, name: root, internal node count: 1, tips count: 3>'
 
+        .. shownumpydoc
         """
         nodes = [n for n in self.traverse(include_self=False)]
         n_tips = sum([n.is_tip() for n in nodes])
@@ -147,6 +148,7 @@ class TreeNode(SkbioObject):
         >>> str(tree)
         '((a,b)c);\n'
 
+        .. shownumpydoc
         """
 
         fh = StringIO()
@@ -938,10 +940,10 @@ class TreeNode(SkbioObject):
         Note that if self is terminal, it will only be included once even if
         `self_before` and `self_after` are both `True`.
 
-        Yields
-        ------
-        TreeNode
-            Traversed node.
+        Returns
+        -------
+        GeneratorType
+            Yields successive `TreeNode` objects
 
         See Also
         --------
@@ -984,10 +986,10 @@ class TreeNode(SkbioObject):
         include_self : bool
             include the initial node if True
 
-        Yields
-        ------
-        TreeNode
-            Traversed node.
+        Returns
+        -------
+        GeneratorType
+            Yields successive `TreeNode` objects
 
         See Also
         --------
@@ -1031,10 +1033,10 @@ class TreeNode(SkbioObject):
         include_self : bool
             include the initial node if True
 
-        Yields
-        ------
-        TreeNode
-            Traversed node.
+        Returns
+        -------
+        GeneratorType
+            Yields successive `TreeNode` objects
 
         See Also
         --------
@@ -1099,10 +1101,10 @@ class TreeNode(SkbioObject):
         include_self : bool
             include the initial node if True
 
-        Yields
-        ------
-        TreeNode
-            Traversed node.
+        Returns
+        -------
+        GeneratorType
+            Yields successive `TreeNode` objects
 
         See Also
         --------
@@ -1174,10 +1176,10 @@ class TreeNode(SkbioObject):
         include_self : bool
             include the initial node if True
 
-        Yields
-        ------
-        TreeNode
-            Traversed node.
+        Returns
+        -------
+        GeneratorType
+            Yields successive `TreeNode` objects
 
         See Also
         --------
@@ -1223,10 +1225,10 @@ class TreeNode(SkbioObject):
         include_self : bool
             include the initial node if True
 
-        Yields
-        ------
-        TreeNode
-            Traversed node.
+        Returns
+        -------
+        GeneratorType
+            Yields successive `TreeNode` objects
 
         See Also
         --------
@@ -1267,10 +1269,10 @@ class TreeNode(SkbioObject):
         include_self : bool
             include the initial node if True
 
-        Yields
-        ------
-        TreeNode
-            Traversed node.
+        Returns
+        -------
+        GeneratorType
+            Yields successive `TreeNode` objects
 
         See Also
         --------
@@ -1561,13 +1563,13 @@ class TreeNode(SkbioObject):
         Parameters
         ----------
         func : a function
-            A function that accepts a TreeNode and returns `True` or `False`,
+            A function that accepts a TreeNode and returns `True` or `Fals`,
             where `True` indicates the node is to be yielded
 
-        Yields
-        ------
-        TreeNode
-            Node found by `func`.
+        Returns
+        -------
+        GeneratorType
+            A generator that yields nodes
 
         See Also
         --------
@@ -1931,12 +1933,12 @@ class TreeNode(SkbioObject):
             first parameter, and a ``list`` that represents the lineage as the
             second parameter.
 
-        Yields
-        ------
-        tuple
-            ``(tip, [lineage])`` where ``tip`` corresponds to a tip in the tree
-            and ``[lineage]`` is the expanded names from root to tip. ``None``
-            and empty strings are omitted from the lineage.
+        Returns
+        -------
+        generator
+            (tip, [lineage]) where tip corresponds to a tip in the tree and
+            the [lineage] is the expanded names from root to tip. Nones and
+            empty strings are omitted from the lineage
 
         Notes
         -----
@@ -2858,10 +2860,10 @@ class TreeNode(SkbioObject):
         Tip names are shuffled inplace. If neither `k` nor `names` are
         provided, all tips are shuffled.
 
-        Yields
-        ------
-        TreeNode
-            Tree with shuffled tip names.
+        Returns
+        -------
+        GeneratorType
+            Yielding TreeNode
 
         Raises
         ------

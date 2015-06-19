@@ -10,8 +10,6 @@
 
 import os
 import platform
-import re
-import ast
 from setuptools import find_packages, setup
 from setuptools.extension import Extension
 from setuptools.command.build_ext import build_ext as _build_ext
@@ -28,13 +26,7 @@ class build_ext(_build_ext):
         import numpy
         self.include_dirs.append(numpy.get_include())
 
-# version parsing from __init__ pulled from Flask's setup.py
-# https://github.com/mitsuhiko/flask/blob/master/setup.py
-_version_re = re.compile(r'__version__\s+=\s+(.*)')
-
-with open('skbio/__init__.py', 'rb') as f:
-    hit = _version_re.search(f.read().decode('utf-8')).group(1)
-    version = str(ast.literal_eval(hit))
+__version__ = "0.2.3-dev"
 
 classes = """
     Development Status :: 1 - Planning
@@ -91,7 +83,7 @@ if USE_CYTHON:
     extensions = cythonize(extensions)
 
 setup(name='scikit-bio',
-      version=version,
+      version=__version__,
       license='BSD',
       description=description,
       long_description=long_description,
@@ -104,11 +96,10 @@ setup(name='scikit-bio',
       packages=find_packages(),
       ext_modules=extensions,
       cmdclass={'build_ext': build_ext},
-      setup_requires=['numpy'],
-      install_requires=['numpy', 'matplotlib >= 1.1.0',
-                        'scipy >= 0.13.0', 'pandas >= 0.14.0', 'future', 'six',
-                        'natsort >= 4.0.0', 'IPython',
-                        'CacheControl[FileCache]'],
+      setup_requires=['numpy >= 1.7'],
+      install_requires=['numpy >= 1.7', 'matplotlib >= 1.1.0',
+                        'scipy >= 0.13.0', 'pandas', 'future', 'six',
+                        'natsort', 'IPython', 'CacheControl[FileCache]'],
       extras_require={'test': ["nose >= 0.10.1", "pep8", "flake8",
                                "python-dateutil"],
                       'doc': ["Sphinx == 1.2.2", "sphinx-bootstrap-theme"]},

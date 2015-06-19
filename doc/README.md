@@ -13,13 +13,12 @@ Building the documentation
 To build the documentation, you'll need the following Python packages
 installed:
 
-- [Sphinx](http://sphinx-doc.org/) == 1.2.2
+- [Sphinx](http://sphinx-doc.org/) >= 1.2.2
 - [sphinx-bootstrap-theme](https://pypi.python.org/pypi/sphinx-bootstrap-theme/)
-- [numpydoc](https://github.com/numpy/numpydoc) >= v0.6
 
 An easy way to install the dependencies is via pip:
 
-    pip install Sphinx sphinx-bootstrap-theme git+git://github.com/numpy/numpydoc.git
+    pip install Sphinx sphinx-bootstrap-theme
 
 Finally, you will need to install scikit-bio.
 
@@ -33,9 +32,10 @@ a virtualenv) or point your ```PYTHONPATH``` environment variable to this code,
 To build the documentation, assuming you are at the top-level scikit-bio
 directory:
 
-    make -C doc clean html
+    cd doc
+    make html
 
-The built HTML documentation will be at ```doc/build/html/index.html```.
+The built HTML documentation will be at ```build/html/index.html```.
 
 Contributing to the documentation
 ---------------------------------
@@ -45,15 +45,19 @@ something entirely new or by modifying existing documentation, please first
 review our [scikit-bio contribution guide](../CONTRIBUTING.md).
 
 Before submitting your changes, ensure that the documentation builds without
-errors or warnings.
+any errors or warnings, and that there are no broken links:
+
+    make clean
+    make html
+    make linkcheck
 
 ### Documentation guidelines
 
 Most of scikit-bio's API documentation is automatically generated from
 [docstrings](http://legacy.python.org/dev/peps/pep-0257/#what-is-a-docstring).
 The advantage to this approach is that users can access the documentation in an
-interactive Python session or from our website as HTML. Other output formats
-are also possible, such as PDF.
+interactive Python session or from our website as HTML. Other output forms are
+also possible, such as PDF.
 
 scikit-bio docstrings follow the [numpydoc conventions](https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt).
 This ensures that the docstrings are easily readable both from the interpreter
@@ -144,8 +148,8 @@ to each object is inserted into the page for you.
 After listing public module members, we encourage a usage example section
 showing how to use some of the module's functionality. Examples should be
 written in [doctest](http://docs.python.org/2/library/doctest.html) format so
-that they can be automatically tested (e.g., using ```make test``` or
-```python -m skbio.test```).
+that they can be automatically tested (e.g., using ```make test```,
+```python -m skbio.test```, or ```make doctest```).
 
     Examples
     --------
@@ -161,7 +165,7 @@ documentation with the ```.. plot::``` directive. For example:
 
     .. plot::
 
-       >>> from skbio.draw import boxplots
+       >>> from skbio.draw.distributions import boxplots
        >>> fig = boxplots([[2, 2, 1, 3, 4, 4.2, 7], [0, -1, 4, 5, 6, 7]])
 
 This will include the plot, a link to the source code used to generate the
@@ -177,14 +181,25 @@ functions, and exceptions), follow the numpydoc conventions. In addition to
 these conventions, there are a few things to keep in mind:
 
 - When documenting a class, only public methods and attributes are included in
-  the built documentation. If a method or attribute starts with an
-  underscore, it is assumed to be private.
+  the built documentation by default. If a method or attribute starts with an
+  underscore, it is assumed to be private. If you want a private method to be
+  included in the built documentation, add the following line to the method's
+  docstring:
 
-- When documenting a class, include the ```Parameters``` section in the class
-  docstring, instead of in the ```__init__``` docstring. While numpydoc
-  technically supports either form, ```__init__``` is not included in the list
-  of methods by default and thus should have its documentation included in the
-  class docstring.
+    ```
+    .. shownumpydoc
+    ```
+
+  For example, you might want to document "special" methods such as
+  ```__getitem__```, ```__str__```, etc., which would be ignored by default. We
+  recommend placing this at the end of the docstring for consistency. Note that
+  this will only work for methods; private attributes will *always* be ignored.
+
+- When documenting a class, include the ```Parameters``` and ```Attributes```
+  sections in the class docstring, instead of in the ```__init__``` docstring.
+  While numpydoc technically supports either form,
+  ```__init__``` is not included in the list of methods by default and thus
+  should have its documentation included in the class docstring.
 
 #### Including the module in the docs
 

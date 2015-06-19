@@ -17,9 +17,18 @@ class _CompressedNode(object):
     ----------
     key : string
         the key attached to the node
+
     values : list of objects, optional
         the values attached to this node
 
+    Attributes
+    ----------
+    values : list of objects
+        the values attached to this node
+    key : string
+        the key attached to the node
+    children : dict of {string: _CompressedNode}
+        the children nodes below this node
     """
 
     def __init__(self, key, values=None):
@@ -175,6 +184,10 @@ class CompressedTrie(object):
     pair_list : list of tuples, optional
         List of (key, value) pairs to initialize the Trie
 
+    Attributes
+    ----------
+    size
+    prefix_map
     """
 
     def __init__(self, pair_list=None):
@@ -239,11 +252,10 @@ def fasta_to_pairlist(seqs):
     seqs : Iterable
         tuples of the form ``(label, seq)``
 
-    Yields
-    ------
-    tuple
-        Tuple of the form ``(seq, label)``.
-
+    Returns
+    -------
+    GeneratorType
+        yields tuples of the form ``(seq, label)``
     """
     for label, seq in seqs:
         yield seq, label

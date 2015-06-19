@@ -14,6 +14,16 @@ class FileFormatError(Exception):
     pass
 
 
+class RecordError(FileFormatError):
+    """Raised when a record is bad."""
+    pass
+
+
+class FieldError(RecordError):
+    """Raised when a field within a record is bad."""
+    pass
+
+
 class UnrecognizedFormatError(FileFormatError):
     """Raised when a file's format is unknown, ambiguous, or unidentifiable."""
     pass
@@ -26,11 +36,6 @@ class ClustalFormatError(FileFormatError):
 
 class FASTAFormatError(FileFormatError):
     """Raised when a ``fasta`` formatted file cannot be parsed."""
-    pass
-
-
-class QUALFormatError(FASTAFormatError):
-    """Raised when a ``qual`` formatted file cannot be parsed."""
     pass
 
 

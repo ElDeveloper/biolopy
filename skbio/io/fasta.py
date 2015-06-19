@@ -346,11 +346,8 @@ the correct file format for us!
 
 Let's inspect the type of sequences stored in the ``Alignment``:
 
->>> aln[0] # doctest: +NORMALIZE_WHITESPACE
-Sequence('AAGCTN ... GGGTAT', length=42, has_metadata=True,
-         has_positional_metadata=False)
->>> aln[0].metadata
-{'id': 'seq1', 'description': 'Turkey'}
+>>> aln[0]
+Sequence('AAGCTN ... GGGTAT', length=42, id='seq1', description='Turkey')
 
 By default, sequences are loaded as ``Sequence`` objects. We can
 change the type of sequence via the ``constructor`` parameter:
@@ -358,9 +355,8 @@ change the type of sequence via the ``constructor`` parameter:
 >>> from skbio import DNA
 >>> fh = StringIO(fs) # reload the StringIO to read from the beginning again
 >>> aln = Alignment.read(fh, constructor=DNA)
->>> aln[0] # doctest: +NORMALIZE_WHITESPACE
-DNA('AAGCTN ... GGGTAT', length=42, has_metadata=True,
-    has_positional_metadata=False)
+>>> aln[0]
+DNA('AAGCTN ... GGGTAT', length=42, id='seq1', description='Turkey')
 
 We now have an ``Alignment`` of ``DNA`` objects instead of
 ``Sequence`` objects.
@@ -396,43 +392,33 @@ use the generator-based reader to process a single sequence at a time in a
 >>> import skbio.io
 >>> fh = StringIO(fs) # reload the StringIO to read from the beginning again
 >>> for seq in skbio.io.read(fh, format='fasta'):
-...     print(seq[0:6], len(seq), seq.metadata['id'],
-...           seq.metadata['description'])
-AAGCTN 42 seq1 Turkey
-AAGCCT 42 seq2 Salmo gair
-ACCGGT 42 seq3 H. Sapiens
-AAACCC 42 seq4 Chimp
-AAACCC 42 seq5 Gorilla
+...     seq
+Sequence('AAGCTN ... GGGTAT', length=42, id='seq1', description='Turkey')
+Sequence('AAGCCT ... CGGTAT', length=42, id='seq2', description='Salmo gair')
+Sequence('ACCGGT ... GGGTAA', length=42, id='seq3', description='H. Sapiens')
+Sequence('AAACCC ... ACTCAT', length=42, id='seq4', description='Chimp')
+Sequence('AAACCC ... GCTTAA', length=42, id='seq5', description='Gorilla')
 
 A single sequence can also be read into a ``Sequence`` (or subclass):
 
 >>> from skbio import Sequence
 >>> fh = StringIO(fs) # reload the StringIO to read from the beginning again
->>> seq = Sequence.read(fh)
->>> seq # doctest: +NORMALIZE_WHITESPACE
-Sequence('AAGCTN ... GGGTAT', length=42, has_metadata=True,
-         has_positional_metadata=False)
+>>> Sequence.read(fh)
+Sequence('AAGCTN ... GGGTAT', length=42, id='seq1', description='Turkey')
 
 By default, the first sequence in the FASTA file is read. This can be
 controlled with ``seq_num``. For example, to read the fifth sequence:
 
 >>> fh = StringIO(fs) # reload the StringIO to read from the beginning again
->>> seq = Sequence.read(fh, seq_num=5)
->>> seq # doctest: +NORMALIZE_WHITESPACE
-Sequence('AAACCC ... GCTTAA', length=42, has_metadata=True,
-         has_positional_metadata=False)
->>> seq.metadata
-{'id': 'seq5', 'description': 'Gorilla'}
+>>> Sequence.read(fh, seq_num=5)
+Sequence('AAACCC ... GCTTAA', length=42, id='seq5', description='Gorilla')
 
 We can use the same API to read the fifth sequence into a ``DNA``:
 
 >>> fh = StringIO(fs) # reload the StringIO to read from the beginning again
 >>> dna_seq = DNA.read(fh, seq_num=5)
->>> dna_seq # doctest: +NORMALIZE_WHITESPACE
-DNA('AAACCC ... GCTTAA', length=42, has_metadata=True,
-    has_positional_metadata=False)
->>> dna_seq.metadata
-{'id': 'seq5', 'description': 'Gorilla'}
+>>> dna_seq
+DNA('AAACCC ... GCTTAA', length=42, id='seq5', description='Gorilla')
 
 Individual sequence objects can also be written in FASTA format:
 
@@ -481,11 +467,15 @@ To read in a single ``Sequence`` at a time, we can use the
 generator-based reader as we did above, providing both FASTA and QUAL files:
 
 >>> for seq in skbio.io.read(fasta_fh, qual=qual_fh, format='fasta'):
-...     print(seq[0:7], len(seq), seq.metadata['id'],
-...           seq.metadata['description'],
-...           seq.positional_metadata['quality'].values)
-CGATGTC 7 seq1 db-accession-149855 [ 40  39  39   4  50   1 100]
-CATCG 5 seq2 db-accession-34989 [ 3  3 10 42 80]
+...     seq # doctest: +NORMALIZE_WHITESPACE
+...     seq.quality # doctest: +NORMALIZE_WHITESPACE
+Sequence('CGATGTC', length=7, id='seq1', description='db-acc ... 149855',
+         quality=[40, 39, 39, 4, 50, 1, 100])
+array([ 40,  39,  39,   4,  50,   1, 100])
+Sequence('CATCG', length=5, id='seq2', description='db-accession-34989',
+         quality=[3, 3, 10, 42, 80])
+array([ 3,  3, 10, 42, 80])
+
 
 Note that the sequence objects have quality scores since we provided a QUAL
 file. The other FASTA readers operate in a similar manner.
@@ -546,7 +536,7 @@ References
 
 from __future__ import absolute_import, division, print_function
 from future.builtins import range, zip
-from six.moves import zip_longest
+from future.standard_library import hooks
 
 import textwrap
 from functools import partial
@@ -554,7 +544,7 @@ from functools import partial
 import numpy as np
 
 from skbio.io import (register_reader, register_writer, register_sniffer,
-                      FASTAFormatError, QUALFormatError, FileSentinel)
+                      FASTAFormatError, FileSentinel)
 from skbio.io._base import (_chunk_str, _get_nth_sequence,
                             _parse_fasta_like_header,
                             _format_fasta_like_records, _line_generator,
@@ -562,60 +552,56 @@ from skbio.io._base import (_chunk_str, _get_nth_sequence,
 from skbio.alignment import SequenceCollection, Alignment
 from skbio.sequence import Sequence, DNA, RNA, Protein
 
+with hooks():
+    from itertools import zip_longest
+
 
 @register_sniffer('fasta')
 def _fasta_sniffer(fh):
     # Strategy:
     #   Ignore up to 5 blank/whitespace-only lines at the beginning of the
-    #   file. Read up to 10 records. If at least one record is read (i.e.
+    #   file. Read up to 10 FASTA records. If at least one record is read (i.e.
     #   the file isn't empty) and no errors are thrown during reading, assume
-    #   the file is in FASTA format. If a record appears to be QUAL, do *not*
-    #   identify the file as FASTA since we don't want to sniff QUAL files as
-    #   FASTA (technically they can be read as FASTA since the sequences may
-    #   not be validated but it probably isn't what the user wanted). Also, if
-    #   we add QUAL as its own file format in the future, we wouldn't want the
-    #   FASTA and QUAL sniffers to both positively identify a QUAL file.
+    #   the file is in FASTA format. Next, try to parse the file as QUAL, which
+    #   has stricter requirements. If this succeeds, do *not* identify the file
+    #   as FASTA since we don't want to sniff QUAL files as FASTA (technically
+    #   they can be read as FASTA since the sequences aren't validated but it
+    #   probably isn't what the user wanted). Also, if we add QUAL as its own
+    #   file format in the future, we wouldn't want the FASTA and QUAL sniffers
+    #   to both identify a QUAL file.
     if _too_many_blanks(fh, 5):
         return False, {}
 
     num_records = 10
-    empty = True
     try:
-        parser = _parse_fasta_raw(fh, _sniffer_data_parser, FASTAFormatError)
-        for _ in zip(range(num_records), parser):
-            empty = False
+        not_empty = False
+        for _ in zip(range(num_records), _fasta_to_generator(fh)):
+            not_empty = True
+
+        if not_empty:
+            fh.seek(0)
+            try:
+                list(zip(range(num_records),
+                         _parse_fasta_raw(fh, _parse_quality_scores, 'QUAL')))
+            except FASTAFormatError:
+                return True, {}
+            else:
+                return False, {}
+        else:
+            return False, {}
     except FASTAFormatError:
         return False, {}
-
-    if empty:
-        return False, {}
-    else:
-        return True, {}
-
-
-def _sniffer_data_parser(chunks):
-    data = _parse_sequence_data(chunks)
-    try:
-        _parse_quality_scores(chunks)
-    except QUALFormatError:
-        return data
-    else:
-        # used for flow control within sniffer, user should never see this
-        # message
-        raise FASTAFormatError('Data appear to be quality scores.')
 
 
 @register_reader('fasta')
 def _fasta_to_generator(fh, qual=FileSentinel, constructor=Sequence):
     if qual is None:
         for seq, id_, desc in _parse_fasta_raw(fh, _parse_sequence_data,
-                                               FASTAFormatError):
-            yield constructor(seq, metadata={'id': id_, 'description': desc})
+                                               'FASTA'):
+            yield constructor(seq, id=id_, description=desc)
     else:
-        fasta_gen = _parse_fasta_raw(fh, _parse_sequence_data,
-                                     FASTAFormatError)
-        qual_gen = _parse_fasta_raw(qual, _parse_quality_scores,
-                                    QUALFormatError)
+        fasta_gen = _parse_fasta_raw(fh, _parse_sequence_data, 'FASTA')
+        qual_gen = _parse_fasta_raw(qual, _parse_quality_scores, 'QUAL')
 
         for fasta_rec, qual_rec in zip_longest(fasta_gen, qual_gen,
                                                fillvalue=None):
@@ -639,10 +625,8 @@ def _fasta_to_generator(fh, qual=FileSentinel, constructor=Sequence):
                     "records: %r != %r" % (fasta_desc, qual_desc))
 
             # sequence and quality scores lengths are checked in constructor
-            yield constructor(
-                fasta_seq,
-                metadata={'id': fasta_id, 'description': fasta_desc},
-                positional_metadata={'quality': qual_scores})
+            yield constructor(fasta_seq, id=fasta_id, description=fasta_desc,
+                              quality=qual_scores)
 
 
 @register_reader('fasta', Sequence)
@@ -776,7 +760,7 @@ def _alignment_to_fasta(obj, fh, qual=FileSentinel,
                         description_newline_replacement, max_width)
 
 
-def _parse_fasta_raw(fh, data_parser, error_type):
+def _parse_fasta_raw(fh, data_parser, format_label):
     """Raw parser for FASTA or QUAL files.
 
     Returns raw values (seq/qual, id, description). It is the responsibility of
@@ -790,9 +774,9 @@ def _parse_fasta_raw(fh, data_parser, error_type):
     if seq_header.startswith('>'):
         id_, desc = _parse_fasta_like_header(seq_header)
     else:
-        raise error_type(
-            "Found non-header line when attempting to read the 1st record:"
-            "\n%s" % seq_header)
+        raise FASTAFormatError(
+            "Found non-header line when attempting to read the 1st %s record:"
+            "\n%s" % (format_label, seq_header))
 
     data_chunks = []
     prev = seq_header
@@ -806,8 +790,9 @@ def _parse_fasta_raw(fh, data_parser, error_type):
             if line:
                 # ensure no blank lines within a single record
                 if not prev:
-                    raise error_type(
-                        "Found blank or whitespace-only line within record.")
+                    raise FASTAFormatError(
+                        "Found blank or whitespace-only line within %s "
+                        "record." % format_label)
                 data_chunks.append(line)
         prev = line
     # yield last record in file
@@ -816,26 +801,20 @@ def _parse_fasta_raw(fh, data_parser, error_type):
 
 def _parse_sequence_data(chunks):
     if not chunks:
-        raise FASTAFormatError("Found header without sequence data.")
+        raise FASTAFormatError("Found FASTA header without sequence data.")
     return ''.join(chunks)
 
 
 def _parse_quality_scores(chunks):
     if not chunks:
-        raise QUALFormatError("Found header without quality scores.")
+        raise FASTAFormatError("Found QUAL header without quality scores.")
 
     qual_str = ' '.join(chunks)
     try:
-        quality = np.asarray(qual_str.split(), dtype=int)
+        return np.asarray(qual_str.split(), dtype=int)
     except ValueError:
-        raise QUALFormatError(
+        raise FASTAFormatError(
             "Could not convert quality scores to integers:\n%s" % qual_str)
-
-    if (quality < 0).any():
-        raise QUALFormatError(
-            "Encountered negative quality score(s). Quality scores must be "
-            "greater than or equal to zero.")
-    return quality
 
 
 def _sequences_to_fasta(obj, fh, qual, id_whitespace_replacement,

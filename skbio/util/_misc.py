@@ -7,7 +7,7 @@
 # ----------------------------------------------------------------------------
 
 from __future__ import absolute_import, division, print_function
-from six.moves import zip_longest
+from future.standard_library import hooks
 
 import hashlib
 from os import remove, makedirs
@@ -15,6 +15,9 @@ from os.path import exists, isdir
 from functools import partial
 from warnings import warn
 from types import FunctionType
+
+with hooks():
+    from itertools import zip_longest
 
 
 class MiniRegistry(dict):

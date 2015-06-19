@@ -7,7 +7,9 @@
 # ----------------------------------------------------------------------------
 
 from __future__ import absolute_import, division, print_function
+from future.builtins import zip
 
+from functools import partial
 
 import numpy as np
 import matplotlib as mpl
@@ -79,6 +81,8 @@ class OrdinationResults(SkbioObject):
         -------
         str
             String representation of the ordination results.
+
+        .. shownumpydoc
 
         """
         lines = ['Ordination results:']
