@@ -11,6 +11,7 @@
 
 ### Performance enhancements
 * The speed of quality score decoding has been significantly improved (~2x) when reading `fastq` files.
+* The speed of `NucleotideSequence.reverse_complement` has been improved (~6x).
 
 ### Bug fixes
 * Changed `BiologicalSequence.distance` to raise an error any time two sequences are passed of different lengths regardless of the `distance_fn` being passed. [(#514)](https://github.com/biocore/scikit-bio/issues/514)
@@ -47,6 +48,7 @@ described here [Making a flat list out of lists of lists](http://stackoverflow.c
     - Autodetect Python version and disable doctests for Python 3.
 * `numpy` is no longer required to be installed before installing scikit-bio!
 * Upgraded checklist.py to check source files non-conforming to [new header style](http://scikit-bio.org/docs/latest/development/new_module.html). ([#855](https://github.com/biocore/scikit-bio/issues/855))
+* Updated to use `natsort` >= 4.0.0.
 
 ## Version 0.2.3 (2015-02-13)
 

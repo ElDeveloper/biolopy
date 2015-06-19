@@ -11,6 +11,8 @@ from future.utils import with_metaclass
 
 from abc import ABCMeta, abstractproperty
 
+import numpy as np
+
 from skbio.util import classproperty
 from ._iupac_sequence import IUPACSequence, _motifs as parent_motifs
 
@@ -22,10 +24,9 @@ class NucleotideSequence(with_metaclass(ABCMeta, IUPACSequence)):
 
     Attributes
     ----------
-    id
-    description
-    sequence
-    quality
+    values
+    metadata
+    positional_metadata
     alphabet
     gap_chars
     nondegenerate_chars
@@ -39,6 +40,18 @@ class NucleotideSequence(with_metaclass(ABCMeta, IUPACSequence)):
     RNA
 
     """
+    __complement_lookup = None
+
+    @classproperty
+    def _complement_lookup(cls):
+        if cls.__complement_lookup is not None:
+            return cls.__complement_lookup
+
+        lookup = np.zeros(cls._number_of_extended_ascii_codes, dtype=np.uint8)
+        for key, value in cls.complement_map.items():
+            lookup[ord(key)] = ord(value)
+        cls.__complement_lookup = lookup
+        return lookup
 
     @property
     def _motifs(self):
@@ -68,16 +81,16 @@ class NucleotideSequence(with_metaclass(ABCMeta, IUPACSequence)):
         Parameters
         ----------
         reverse : bool, optional
-            If ``True``, return the reverse complement. If quality scores are
-            present, they will be reversed.
+            If ``True``, return the reverse complement. If positional metadata
+            is present, it will be reversed.
 
         Returns
         -------
         NucleotideSequence
-            The (reverse) complement of the nucleotide sequence. The type, ID,
-            description, and quality scores of the result will be the same as
-            the nucleotide sequence. If `reverse` is ``True``, quality scores
-            will be reversed if they are present.
+            The (reverse) complement of the nucleotide sequence. The type and
+            metadata of the result will be the same as the nucleotide
+            sequence. If `reverse` is ``True``, positional metadata
+            will be reversed if it is present.
 
         See Also
         --------
@@ -87,22 +100,26 @@ class NucleotideSequence(with_metaclass(ABCMeta, IUPACSequence)):
         Examples
         --------
         >>> from skbio import DNA
-        >>> DNA('TTCATT', id='s', quality=range(6)).complement()
-        DNA('AAGTAA', length=6, id='s', quality=[0, 1, 2, 3, 4, 5])
-        >>> DNA('TTCATT', id='s', quality=range(6)).complement(reverse=True)
-        DNA('AATGAA', length=6, id='s', quality=[5, 4, 3, 2, 1, 0])
+        >>> seq = DNA('TTCATT',
+        ...           positional_metadata={'quality':range(6)}).complement()
+        >>> str(seq)
+        'AAGTAA'
+        >>> seq.positional_metadata['quality'].values
+        array([0, 1, 2, 3, 4, 5])
+        >>> seq = DNA('TTCATT',
+        ...           positional_metadata={'quality':range(6)})
+        >>> seq = seq.complement(reverse=True)
+        >>> str(seq)
+        'AATGAA'
+        >>> seq.positional_metadata['quality'].values
+        array([5, 4, 3, 2, 1, 0])
 
         """
-        # TODO rewrite method for optimized performance
-        complement_map = self.complement_map
-        seq_iterator = reversed(self) if reverse else self
-        result = [complement_map[str(base)] for base in seq_iterator]
-
-        quality = self.quality
-        if self._has_quality() and reverse:
-            quality = self.quality[::-1]
-
-        return self._to(sequence=''.join(result), quality=quality)
+        result = self._complement_lookup[self._bytes]
+        complement = self._to(sequence=result)
+        if reverse:
+            complement = complement[::-1]
+        return complement
 
     def reverse_complement(self):
         """Return the reverse complement of the nucleotide sequence.
@@ -110,9 +127,9 @@ class NucleotideSequence(with_metaclass(ABCMeta, IUPACSequence)):
         Returns
         -------
         NucleotideSequence
-            The reverse complement of the nucleotide sequence. The type, ID,
-            and description of the result will be the same as the nucleotide
-            sequence. If quality scores are present, they will be reversed.
+            The reverse complement of the nucleotide sequence. The type and
+            metadata of the result will be the same as the nucleotide
+            sequence. If positional metadata is present, it will be reversed.
 
         See Also
         --------
@@ -126,8 +143,14 @@ class NucleotideSequence(with_metaclass(ABCMeta, IUPACSequence)):
         Examples
         --------
         >>> from skbio import DNA
-        >>> DNA('TTCATT', id='s', quality=range(6)).reverse_complement()
-        DNA('AATGAA', length=6, id='s', quality=[5, 4, 3, 2, 1, 0])
+        >>> seq = DNA('TTCATT',
+        ...           positional_metadata={'quality':range(6)})
+        >>> seq = seq.reverse_complement()
+        >>> str(seq)
+        'AATGAA'
+        >>> seq.positional_metadata['quality'].values
+        array([5, 4, 3, 2, 1, 0])
+
 
         """
         return self.complement(reverse=True)
@@ -185,15 +208,15 @@ _motifs = parent_motifs.copy()
 @_motifs("purine-run")
 def _motif_purine_run(sequence, min_length, ignore):
     """Identifies purine runs"""
-    return sequence.slices_from_regex("([AGR]{%d,})" % min_length,
-                                      ignore=ignore)
+    return sequence.find_with_regex("([AGR]{%d,})" % min_length,
+                                    ignore=ignore)
 
 
 @_motifs("pyrimidine-run")
 def _motif_pyrimidine_run(sequence, min_length, ignore):
     """Identifies pyrimidine runs"""
-    return sequence.slices_from_regex("([CTUY]{%d,})" % min_length,
-                                      ignore=ignore)
+    return sequence.find_with_regex("([CTUY]{%d,})" % min_length,
+                                    ignore=ignore)
 
 # Leave this at the bottom
 _motifs.interpolate(NucleotideSequence, "find_motifs")
