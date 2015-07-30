@@ -12,7 +12,7 @@ import numpy as np
 
 from ._base import Ordination, OrdinationResults
 from ._utils import svd_rank
-from skbio.util._decorator import experimental
+from skbio.util._decorator import deprecated
 
 
 class CA(Ordination):
@@ -56,7 +56,8 @@ class CA(Ordination):
     short_method_name = 'CA'
     long_method_name = 'Canonical Analysis'
 
-    @experimental(as_of="0.4.0")
+    @deprecated(as_of="0.4.0-dev", until='0.4.2',
+                reason='Use skbio.stats.ordination.ca()')
     def __init__(self, X, row_ids, column_ids):
         self.X = np.asarray(X, dtype=np.float64)
         self._ca()
@@ -96,7 +97,8 @@ class CA(Ordination):
         self.W = W[:rank]
         self.U = Ut[:rank].T
 
-    @experimental(as_of="0.4.0")
+    @deprecated(as_of="0.4.0-dev", until='0.4.2',
+                reason='Use skbio.stats.ordination.ca()')
     def scores(self, scaling):
         r"""Compute site and species scores for different scalings.
 

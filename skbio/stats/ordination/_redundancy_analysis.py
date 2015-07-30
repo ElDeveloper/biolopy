@@ -12,7 +12,7 @@ import numpy as np
 
 from ._base import Ordination, OrdinationResults
 from ._utils import corr, svd_rank, scale
-from skbio.util._decorator import experimental
+from skbio.util._decorator import deprecated
 
 
 class RDA(Ordination):
@@ -59,7 +59,8 @@ class RDA(Ordination):
     short_method_name = 'RDA'
     long_method_name = 'Redundancy Analysis'
 
-    @experimental(as_of="0.4.0")
+    @deprecated(as_of="0.4.0-dev", until='0.4.2',
+                reason='Use skbio.stats.ordination.rda()')
     def __init__(self, Y, X, site_ids, species_ids, scale_Y=False):
         self.Y = np.asarray(Y, dtype=np.float64)
         self.X = np.asarray(X, dtype=np.float64)
@@ -158,7 +159,8 @@ class RDA(Ordination):
 
         self.eigenvalues = np.r_[s[:rank], s_res[:rank_res]]
 
-    @experimental(as_of="0.4.0")
+    @deprecated(as_of="0.4.0-dev", until='0.4.2',
+                reason='Use skbio.stats.ordination.rda()')
     def scores(self, scaling):
         """Compute site, species and biplot scores for different scalings.
 

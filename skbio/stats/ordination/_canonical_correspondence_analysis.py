@@ -12,7 +12,7 @@ import numpy as np
 
 from ._base import Ordination, OrdinationResults
 from ._utils import corr, svd_rank, scale
-from skbio.util._decorator import experimental
+from skbio.util._decorator import deprecated
 
 
 class CCA(Ordination):
@@ -90,7 +90,8 @@ class CCA(Ordination):
     short_method_name = 'CCA'
     long_method_name = 'Canonical Correspondence Analysis'
 
-    @experimental(as_of="0.4.0")
+    @deprecated(as_of="0.4.0-dev", until='0.4.2',
+                reason='Use skbio.stats.ordination.cca()')
     def __init__(self, Y, X, site_ids, species_ids):
         self.Y = np.asarray(Y, dtype=np.float64)
         self.X = np.asarray(X, dtype=np.float64)
@@ -173,7 +174,9 @@ class CCA(Ordination):
 
         self.eigenvalues = np.r_[s, s_res]**2
 
-    @experimental(as_of="0.4.0")
+
+    @deprecated(as_of="0.4.0-dev", until='0.4.2',
+                reason='Use skbio.stats.ordination.cca()')
     def scores(self, scaling):
         r"""Compute site and species scores for different scalings.
 

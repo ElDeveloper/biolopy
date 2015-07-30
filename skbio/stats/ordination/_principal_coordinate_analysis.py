@@ -14,7 +14,7 @@ import numpy as np
 
 from skbio.stats.distance import DistanceMatrix
 from ._base import Ordination, OrdinationResults
-from skbio.util._decorator import experimental
+from skbio.util._decorator import deprecated
 
 # - In cogent, after computing eigenvalues/vectors, the imaginary part
 #   is dropped, if any. We know for a fact that the eigenvalues are
@@ -67,7 +67,8 @@ class PCoA(Ordination):
     short_method_name = 'PCoA'
     long_method_name = 'Principal Coordinate Analysis'
 
-    @experimental(as_of="0.4.0")
+    @deprecated(as_of="0.4.0-dev", until='0.4.2',
+                reason='Use skbio.stats.ordination.pcoa()')
     def __init__(self, distance_matrix):
         if isinstance(distance_matrix, DistanceMatrix):
             self.dm = np.asarray(distance_matrix.data, dtype=np.float64)
@@ -112,7 +113,8 @@ class PCoA(Ordination):
         self.eigvals = eigvals[idxs_descending]
         self.eigvecs = eigvecs[:, idxs_descending]
 
-    @experimental(as_of="0.4.0")
+    @deprecated(as_of="0.4.0-dev", until='0.4.2',
+                reason='Use skbio.stats.ordination.pcoa()')
     def scores(self):
         """Compute coordinates in transformed space.
 
