@@ -21,7 +21,7 @@ from skbio.util._decorator import experimental
 
 
 @experimental(as_of="0.5.1")
-def permdisp(distance_matrix, grouping, column=None, test='median',
+def permdisp(distance_matrix, ordination, grouping, column=None, test='median',
              permutations=999):
     """Test for Homogeneity of Multivariate Groups Disperisons using Marti
     Anderson's PERMDISP2 procedure.
@@ -215,11 +215,15 @@ def permdisp(distance_matrix, grouping, column=None, test='median',
 
     """
 
-    ordination = pcoa(distance_matrix)
-    samples = ordination.samples
 
-    sample_size, num_groups, grouping, tri_idxs, distances = _preprocess_input(
-        distance_matrix, grouping, column)
+    if ordination is None:
+        ordination = pcoa(distance_matrix)
+
+        
+    sample_size, num_groups, grouping, tri_idxs, _ = _preprocess_input(
+        ordination, grouping, column)
+
+    samples = ordination.samples
 
     if test == 'centroid':
         test_stat_function = partial(_compute_centroid_groups, samples)

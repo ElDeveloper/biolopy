@@ -996,8 +996,8 @@ def _preprocess_input(distance_matrix, grouping, column):
     into grouping vector).
 
     """
-    if not isinstance(distance_matrix, DistanceMatrix):
-        raise TypeError("Input must be a DistanceMatrix.")
+    # if not isinstance(distance_matrix, DistanceMatrix):
+    #     raise TypeError("Input must be a DistanceMatrix.")
 
     if isinstance(grouping, pd.DataFrame):
         if column is None:
@@ -1009,7 +1009,11 @@ def _preprocess_input(distance_matrix, grouping, column):
         raise ValueError(
             "Must provide a DataFrame if supplying a column name.")
 
-    sample_size = distance_matrix.shape[0]
+    try:
+        sample_size = distance_matrix.shape[0]
+    except:
+        sample_size = distance_matrix.samples.shape[0]
+
     if len(grouping) != sample_size:
         raise ValueError(
             "Grouping vector size must match the number of IDs in the "
@@ -1034,9 +1038,9 @@ def _preprocess_input(distance_matrix, grouping, column):
             "only a single group).")
 
     tri_idxs = np.triu_indices(sample_size, k=1)
-    distances = distance_matrix.condensed_form()
+    # distances = distance_matrix.condensed_form()
 
-    return sample_size, num_groups, grouping, tri_idxs, distances
+    return sample_size, num_groups, grouping, tri_idxs, None
 
 
 def _df_to_vector(distance_matrix, df, column):
@@ -1068,7 +1072,9 @@ def _df_to_vector(distance_matrix, df, column):
     if column not in df:
         raise ValueError("Column '%s' not in DataFrame." % column)
 
-    grouping = df.loc[distance_matrix.ids, column]
+    grouping = df.loc[distance_matrix.samples.index, column]
+    print(grouping.shape)
+
     if grouping.isnull().any():
         raise ValueError(
             "One or more IDs in the distance matrix are not in the data "
